@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -18,29 +18,10 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-def read_html_file(file_name):
-
-    encodings = ['utf-8', 'cp1251', 'iso-8859-1', 'windows-1252']
-    
-    possible_paths = [
-        file_name,
-        os.path.join("frontend", file_name),
-        os.path.join("static", file_name)
-    ]
-    
-    for path in possible_paths:
-        if os.path.exists(path):
-            for encoding in encodings:
-                    with open(path, "r", encoding=encoding) as file:
-                        return file.read()
-
-    return "<html><body><h1>404 - Файл не найден</h1></body></html>"
-
 @app.get("/")
 def root():
 
-    htmldata = read_html_file("index.html")
-    return HTMLResponse(htmldata)
+    return FileResponse("frontend\\index.html")
 
 @app.post("/api/spin")
 async def spin():
