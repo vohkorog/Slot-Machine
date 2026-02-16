@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Однорукий бандит (Python edition)</title>
-    <!-- Меняем ссылку на CSS -->
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -24,12 +23,10 @@
         const leverButton = document.getElementById('lever');
         const messageDisplay = document.getElementById('message');
 
-        // Функция для анимации
         function startSpinAnimation() {
             reel1.classList.add('reel-spin');
             reel2.classList.add('reel-spin');
             reel3.classList.add('reel-spin');
-            messageDisplay.textContent = '🎰 Связываемся с Python... 🎰';
             leverButton.disabled = true;
         }
 
@@ -40,50 +37,32 @@
             leverButton.disabled = false;
         }
 
-        // Функция для вызова Python-сервера
-        // Функция для вызова Python-сервера
         async function callPythonSpin() {
             startSpinAnimation();
             
             try {
-                // Отправляем POST-запрос на наш FastAPI-сервер
                 const response = await fetch('http://localhost:8000/api/spin', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    // Можно передавать ставку, если нужно
                     body: JSON.stringify({}) 
                 });
                 
-                if (!response.ok) {
-                    throw new Error('Ошибка сервера');
-                }
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Обновляем интерфейс с данными от Python
                     reel1.textContent = data.reels[0];
                     reel2.textContent = data.reels[1];
                     reel3.textContent = data.reels[2];
                     messageDisplay.textContent = data.message;
-                } else {
-                    throw new Error(data.error || 'Неизвестная ошибка');
-                }
-                
-            } catch (error) {
-                console.error('Ошибка:', error);
-                messageDisplay.textContent = '😵 Ошибка соединения с Python!';
-                reel1.textContent = '?';
-                reel2.textContent = '?';
-                reel3.textContent = '?';
+                }                 
             } finally {
                 stopSpinAnimation();
             }
         }
 
-        // Вешаем обработчик на кнопку
         leverButton.addEventListener('click', callPythonSpin);
     </script>
 </body>
