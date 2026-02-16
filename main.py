@@ -12,6 +12,6 @@ for i in list:
     string = str(i)
     newstr += string
     print(f'\r{newstr}', end='', flush=True)
-    time.sleep(1)
+    time.sleep(0.5)
 
 print()
