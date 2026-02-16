@@ -2,19 +2,91 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Однорукий бандит</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Однорукий бандит (Python edition)</title>
+    <style>
+        /* Стили из предыдущего примера (можно оставить те же) */
+        body { background: #2a5c3e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Courier New', monospace; }
+        .machine { background: #d4af37; padding: 30px; border-radius: 30px; box-shadow: 0 10px 0 #8b6910; }
+        .reels { background: black; padding: 20px; border-radius: 20px; display: flex; gap: 20px; margin-bottom: 30px; }
+        .reel { width: 100px; height: 100px; background: white; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 4em; font-weight: bold; }
+        #lever { background: #c41e3a; color: white; border: none; font-size: 1.5em; padding: 15px 30px; border-radius: 50px; cursor: pointer; width: 100%; }
+        #message { text-align: center; font-size: 1.2em; color: white; }
+        .reel-spin { opacity: 0.7; transform: scale(0.95); background-color: #ffffe0; }
+    </style>
 </head>
 <body>
     <div class="machine">
         <div class="reels">
-            <div class="reel" id="reel1">7</div>
-            <div class="reel" id="reel2">7</div>
-            <div class="reel" id="reel3">7</div>
+            <div class="reel" id="reel1">?</div>
+            <div class="reel" id="reel2">?</div>
+            <div class="reel" id="reel3">?</div>
         </div>
         <button id="lever">💪 Дернуть рычаг</button>
         <p id="message">Нажми на рычаг!</p>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        const reel1 = document.getElementById('reel1');
+        const reel2 = document.getElementById('reel2');
+        const reel3 = document.getElementById('reel3');
+        const leverButton = document.getElementById('lever');
+        const messageDisplay = document.getElementById('message');
+
+        // Функция для анимации
+        function startSpinAnimation() {
+            reel1.classList.add('reel-spin');
+            reel2.classList.add('reel-spin');
+            reel3.classList.add('reel-spin');
+            messageDisplay.textContent = '🎰 Связываемся с Python... 🎰';
+            leverButton.disabled = true;
+        }
+
+        function stopSpinAnimation() {
+            reel1.classList.remove('reel-spin');
+            reel2.classList.remove('reel-spin');
+            reel3.classList.remove('reel-spin');
+            leverButton.disabled = false;
+        }
+
+        // Функция для вызова Python-сервера
+        async function callPythonSpin() {
+            startSpinAnimation();
+            
+            try {
+                // Отправляем POST-запрос на наш Flask-сервер
+                const response = await fetch('http://localhost:5000/api/spin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ bet: 1 }) // Можно передать ставку
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера');
+                }
+                
+                const data = await response.json();
+                
+                // Обновляем интерфейс с данными от Python
+                reel1.textContent = data.reels[0];
+                reel2.textContent = data.reels[1];
+                reel3.textContent = data.reels[2];
+                messageDisplay.textContent = data.message;
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                messageDisplay.textContent = '😵 Ошибка соединения с Python!';
+                reel1.textContent = '?';
+                reel2.textContent = '?';
+                reel3.textContent = '?';
+            } finally {
+                stopSpinAnimation();
+            }
+        }
+
+        // Вешаем обработчик на кнопку
+        leverButton.addEventListener('click', callPythonSpin);
+    </script>
 </body>
 </html>
